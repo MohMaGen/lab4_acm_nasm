@@ -9,6 +9,8 @@ extern left_rects
 extern right_rects
 extern middle_rects
 extern trapezoids
+extern parabolas
+extern kortes_6
 global main
 
 default rel
@@ -31,7 +33,7 @@ section .rodata
     end: 
         dq  4.3
     n:  
-        dq  200
+        dq  50
 
 section .text
 
@@ -76,6 +78,19 @@ main:
     call    trapezoids
     call    .print_xmm0
 
+    movsd   xmm0, qword [from]
+    movsd   xmm1, qword [end]
+    mov     rdi, qword [n]
+    mov     rsi, function
+    call    parabolas
+    call    .print_xmm0
+
+    movsd   xmm0, qword [from]
+    movsd   xmm1, qword [end]
+    mov     rdi, qword [n]
+    mov     rsi, function
+    call    kortes_6
+    call    .print_xmm0
 
     ;mov rax,60
     xor rdi,rdi
