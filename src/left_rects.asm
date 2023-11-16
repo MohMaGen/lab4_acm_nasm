@@ -92,7 +92,7 @@ left_rects:
 
         jmp     .loop
 
-    .loop_end
+    .loop_end:
     
 
 

@@ -1,3 +1,8 @@
 build/
 *.txt
 target/
+main.0
+replit.nix
+.replit
+main.o
+a.out

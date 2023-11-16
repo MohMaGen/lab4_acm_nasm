@@ -11,6 +11,8 @@ extern middle_rects
 extern trapezoids
 extern parabolas
 extern kortes_6
+extern dinamic_try
+extern alloc_table
 global main
 
 default rel
@@ -33,12 +35,12 @@ section .rodata
     end: 
         dq  4.3
     n:  
-        dq  50
+        dq  15
 
 section .text
 
 main:
-
+    
     movsd   xmm0, qword [num]
     call    function
     call    .print_xmm0
@@ -48,43 +50,43 @@ main:
     mov     rdi, function
     call    derivative
     call    .print_xmm0
-
-
+    
+    
     movsd   xmm0, qword [from]
     movsd   xmm1, qword [end]
     mov     rdi, qword [n]
     mov     rsi, function
     call    left_rects
     call    .print_xmm0
-
+    
     movsd   xmm0, qword [from]
     movsd   xmm1, qword [end]
     mov     rdi, qword [n]
     mov     rsi, function
     call    right_rects
     call    .print_xmm0
-
+    
     movsd   xmm0, qword [from]
     movsd   xmm1, qword [end]
     mov     rdi, qword [n]
     mov     rsi, function
     call    middle_rects
     call    .print_xmm0
-
+    
     movsd   xmm0, qword [from]
     movsd   xmm1, qword [end]
     mov     rdi, qword [n]
     mov     rsi, function
     call    trapezoids
     call    .print_xmm0
-
+    
     movsd   xmm0, qword [from]
     movsd   xmm1, qword [end]
     mov     rdi, qword [n]
     mov     rsi, function
     call    parabolas
     call    .print_xmm0
-
+    
     movsd   xmm0, qword [from]
     movsd   xmm1, qword [end]
     mov     rdi, qword [n]
@@ -92,9 +94,27 @@ main:
     call    kortes_6
     call    .print_xmm0
 
-    ;mov rax,60
-    xor rdi,rdi
-    ;syscall
+
+
+    call     dinamic_try
+
+    mov     rdi, qword 15
+    mov     rsi, qword 20
+    call    alloc_table
+
+    mov     rbx, rax
+    
+    mov     rdx, qword [rbx]
+    mov     rcx, qword [rbx + 8]
+    
+    mov    rax, rdx
+    call     .print_rax
+    mov    rax, rcx
+    call     .print_rax
+
+
+
+    xor     rdi,rdi
     mov     rdi, 0
     call    exit
     ret
