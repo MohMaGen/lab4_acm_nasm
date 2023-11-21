@@ -34,7 +34,7 @@ alloc_table: ; rdi - columns count rsi - rows count -> rax table*
     mul     rbx
     mov     rbx, 8
     mul     rbx
-    mov     rbx, 16
+    mov     rbx, 24
     add     rax, rbx
     mov     rdi, rax
     
@@ -188,8 +188,9 @@ read_column_from_file:
     lea     rsi, [rel open_mode]
     call    fopen
 
-    test    rax, rax
-    jz     .read_file_error
+    mov     qword [rbp - 8], rax
+    cmp     qword [rbp - 8], qword 0
+    je     .read_file_error
 
     mov     [rbp - 32], rax ; fd
 
@@ -237,7 +238,7 @@ read_column_from_file:
         mul     rbx
         add     rax, qword [rbp - 80]
 
-        mov     rbx, qword [rbp - 56] 
+        mov     rbx, qword [rbp - 56]
         cmp     rbx, 0
 
         jne      .write_y 
