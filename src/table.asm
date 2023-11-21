@@ -57,7 +57,7 @@ alloc_table: ; rdi - columns count rsi - rows count -> rax table*
     ret
 
 print_table:
-    push    rbp 
+    push    rbp
     push    rax
     push    rbx
     mov     rbp, rsp
@@ -105,7 +105,8 @@ print_table:
 
             push    rbp
             lea     rdi, [rel cell_format]
-            mov     rsi, qword [rax]
+            movsd   xmm0, qword [rax]
+            mov     rax, 1
             call    printf
             pop     rbp
 
@@ -183,13 +184,17 @@ read_column_from_file:
     mov     [rbp - 16], rdi ; point to table 
     mov     [rbp - 24], rsi ; pointer to file name string
     
-
+    mov     rdi, qword [rbp - 24]
     lea     rsi, [rel open_mode]
-    mov     rsi, [rbp - 24]
     call    fopen
+
+    test    rax, rax
+    jz     .read_file_error
+
     mov     [rbp - 32], rax ; fd
 
-    mov     rax, [rbp - 16]
+
+    mov     rax, [rbp - 16] 
     mov     rbx, qword [rax]
     mov     [rbp - 40], rbx ; columns count
     mov     rbx, qword [rax + 8]
@@ -203,61 +208,66 @@ read_column_from_file:
     mov     [rbp - 80], rax
 
     
-    cmp     rbx, [rbp - 40]
+    mov     rax, [rbp - 56]
+    cmp     rax, [rbp - 40]
     jnl     .columns_overflow
 
+
     
-    mov     rax, 0 ; iter
+    mov     rax, qword 0 ; iter
+    mov     [rbp - 88], rax
     .read_loop:
         cmp     rax, [rbp - 48]
         jnl     .end_read_loop
 
-        
-        push    rax
         push    rbp
-        mov     rdi, [rbp - 32]
+        mov     rdi, qword [rbp - 32]
         lea     rsi, [rel scan_format]
-        mov     rbi, [rbp - 64] ; x
-        mov     rcx, [rbp - 72] ; f(x ...)
-        mov     rax, 0
+        lea     rdx, [rbp - 64]
+        lea     rcx, [rbp - 72]
+        mov     al, 0
         call    fscanf
         pop     rbp
-        pop     rax
-       
-        push    rax
-        mov     [rbp - 88], rax ; idx
 
-        mov     rax, [rbp - 56]
-        mov     rbx, [rbp - 48]
+        mov     rax, qword [rbp - 56]
+        mov     rbx, qword [rbp - 48]
         mul     rbx
-        add     rax, [rbp - 88]
-        add     rax, [rbp - 80]
+        add     rax, qword [rbp - 88]
+        mov     rbx, qword 8
+        mul     rbx
+        add     rax, qword [rbp - 80]
 
-        push    rax
-        mov     rax, [rbp - 56] 
-        cmp     rax, 0
-        pop     rax
+        mov     rbx, qword [rbp - 56] 
+        cmp     rbx, 0
 
-        je      .write_y 
+        jne      .write_y 
 
         .write_x:
-            mov     rbx, qword [rbp - 64]
-            mov     [rax], rbx
+            movsd   xmm0, qword [rbp - 64]
+            movsd   qword [rax], xmm0
 
             jmp     .write_end
 
         .write_y:
-            mov     rbx, qword [rbp - 72]
-            mov     [rax], rbx
+            movsd   xmm0, qword [rbp - 72]
+            movsd   qword [rax], xmm0
 
         .write_end:
 
-        pop     rax 
+        mov     rax, [rbp - 88]
         inc     rax
+        mov     [rbp - 88], rax
         
         jmp     .read_loop
 
     .end_read_loop:
+
+    mov     rax, qword [rbp - 16]
+    mov     rbx, qword 16
+    add     rax, rbx
+    mov     rbx, qword [rax]
+    inc     rbx
+    mov     qword [rax], rbx
 
 
     mov     rdi, [rbp - 32]
@@ -278,6 +288,15 @@ read_column_from_file:
         mov     rax, 1
         jmp .return
 
+    .read_file_error:
+        push    rbp
+        lea     rdi, [rel read_file_error]
+        mov     rax, 0
+        call    printf
+        pop     rbp
+        mov     rax, 1
+        jmp .return
+
 
 section .rodata
     scan_format:
@@ -287,6 +306,7 @@ section .rodata
     open_mode:
         db  "r",0
     columns_overflow_error:
-        db  ": [ \033[31moverflow error\033[0m ] : cant read column from file"
-    
+        db  ": [ ", 0x1b, "[31moverflow error", 0x1b,"[0m ] : cant read column from file",10,10,0
+    read_file_error: 
+        db  ": [ ", 0x1b, "[31mread file error", 0x1b,"[0m ] : cant read file",10,10,0
 

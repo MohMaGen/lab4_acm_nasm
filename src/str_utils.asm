@@ -27,7 +27,6 @@ mul_str:
         cmp     al, bl
         je      .end_str
 
-
         mov     rax, qword [rbp - 48]
         mov     rbx, qword [rbp - 40]
         mov     bl, byte [rbx]
@@ -55,6 +54,11 @@ mul_str:
             jmp     .loop
     .end_loop:
 
+    mov     rax, qword [rbp - 48]
+    mov     bl, byte 0
+    mov     [rax], byte bl
+
+
     add     rsp, 64
     pop     rbx
     pop     rax
@@ -76,14 +80,13 @@ concat_str:
         mov     rax, [rbp - 16]
         mov     al, byte [rax]
         test    al, al
-        je      .end1
+        je      .concat_pointer_from_to_pointer_to_add
 
         mov     rax, qword [rbp - 16]
         inc     rax
         mov     [rbp - 16], rax
 
         jmp     .iter_pointer_to_add_end
-    .end1:
 
     .concat_pointer_from_to_pointer_to_add:
         mov     rax, [rbp - 24]
@@ -91,10 +94,12 @@ concat_str:
         test    al, al
         je      .end2
 
+
         mov     rax, qword [rbp - 16]
         mov     rbx, qword [rbp - 24]
         mov     bl, byte [rbx]
         mov     [rax], byte bl
+        
 
         
         mov     rax, qword [rbp - 16]
@@ -133,10 +138,13 @@ copy_str:
         test    al, al
         je      .end
 
+
         mov     rax, qword [rbp - 16]
         mov     rbx, qword [rbp - 24]
         mov     bl, byte [rbx]
         mov     [rax], byte bl
+
+
 
         inc     rax
         mov     [rbp - 16], rax

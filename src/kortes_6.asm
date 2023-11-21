@@ -5,7 +5,7 @@ global kortes_6
 
 section .rodata
     file:
-        db "kortes_6.txt", 0
+        db "kotes_6.txt", 0
     file_format:
         db "%lf %lf", 10, 0
     open_mode:

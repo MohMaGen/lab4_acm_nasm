@@ -2,17 +2,14 @@ bits 64
 
 extern printf
 extern exit
-extern function
-extern range
-extern derivative
-extern left_rects
-extern right_rects
-extern middle_rects
-extern trapezoids
-extern parabolas
-extern kortes_6
 extern dinamic_try
 extern alloc_table
+extern print_table
+extern read_column_from_file
+extern methods
+extern mul_str
+extern concat_str
+extern copy_str
 global main
 
 default rel
@@ -36,83 +33,58 @@ section .rodata
         dq  4.3
     n:  
         dq  15
+    aboba:
+        db  "+aboba+",0
+    buffers:
+        db  10,"<%s>, <%s>",10,0
+    files:
+        .lr:    db "./left_rects.txt",0
+        .rr:    db "./right_rects.txt",0
+        .k:     db "./kotes_6.txt",0
+        .t:     db "./trapezoids.txt",0
+        .p:     db "./parabolas.txt",0
+        .mr:    db "./middle_rects.txt",0
+
+section .bss 
+    buffer1: resb 1024
+    buffer2: resb 1024
 
 section .text
 
 main:
-    
-    movsd   xmm0, qword [num]
-    call    function
-    call    .print_xmm0
-    
-    movsd   xmm0, qword [error]
-    movsd   xmm1, qword [num]
-    mov     rdi, function
-    call    derivative
-    call    .print_xmm0
-    
-    
-    movsd   xmm0, qword [from]
-    movsd   xmm1, qword [end]
-    mov     rdi, qword [n]
-    mov     rsi, function
-    call    left_rects
-    call    .print_xmm0
-    
-    movsd   xmm0, qword [from]
-    movsd   xmm1, qword [end]
-    mov     rdi, qword [n]
-    mov     rsi, function
-    call    right_rects
-    call    .print_xmm0
-    
-    movsd   xmm0, qword [from]
-    movsd   xmm1, qword [end]
-    mov     rdi, qword [n]
-    mov     rsi, function
-    call    middle_rects
-    call    .print_xmm0
-    
-    movsd   xmm0, qword [from]
-    movsd   xmm1, qword [end]
-    mov     rdi, qword [n]
-    mov     rsi, function
-    call    trapezoids
-    call    .print_xmm0
-    
-    movsd   xmm0, qword [from]
-    movsd   xmm1, qword [end]
-    mov     rdi, qword [n]
-    mov     rsi, function
-    call    parabolas
-    call    .print_xmm0
-    
-    movsd   xmm0, qword [from]
-    movsd   xmm1, qword [end]
-    mov     rdi, qword [n]
-    mov     rsi, function
-    call    kortes_6
-    call    .print_xmm0
+    ;push    rbp
+    ;call    methods
+    ;pop     rbp
 
+    mov     rbp, rsp
+    sub     rsp, 32
 
-
-    call     dinamic_try
-
-    mov     rdi, qword 15
-    mov     rsi, qword 20
+    mov     rdi, qword 7
+    mov     rsi, qword [n]
     call    alloc_table
 
-    mov     rbx, rax
-    
-    mov     rdx, qword [rbx]
-    mov     rcx, qword [rbx + 8]
-    
-    mov    rax, rdx
-    call     .print_rax
-    mov    rax, rcx
-    call     .print_rax
+    mov     [rbp - 16], rax
 
 
+    lea     rsi, [rel files.lr]
+    call .read_column
+    lea     rsi, [rel files.lr]
+    call .read_column
+    lea     rsi, [rel files.rr]
+    call .read_column
+    lea     rsi, [rel files.mr]
+    call .read_column
+    lea     rsi, [rel files.t]
+    call .read_column
+    lea     rsi, [rel files.p]
+    call .read_column
+    lea     rsi, [rel files.k]
+    call .read_column
+
+    mov     rdi, [rbp - 16]
+    call    print_table
+
+    add     rsp, 32
 
     xor     rdi,rdi
     mov     rdi, 0
@@ -130,6 +102,13 @@ main:
         mov     rsi, rax
         mov     eax, 0
         call    printf wrt ..plt
+        ret
+
+    .read_column:
+        push    rbp
+        mov     rdi, [rbp - 16]
+        call    read_column_from_file
+        pop     rbp
         ret
     
 
