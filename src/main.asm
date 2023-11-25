@@ -9,7 +9,9 @@ extern read_column_from_file
 extern methods
 extern mul_str
 extern concat_str
+extern test_array
 extern copy_str
+extern test_iters
 global main
 
 default rel
@@ -83,6 +85,8 @@ main:
 
     mov     rdi, [rbp - 16]
     call    print_table
+    
+    call    test_iters
 
     add     rsp, 32
 

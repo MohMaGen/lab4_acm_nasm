@@ -59,3 +59,84 @@ range:
 
        add      rsp, 24
        ret
+
+extern alloc_array
+extern calc_step
+global create_range
+section .text 
+create_range:
+    push    rbp 
+    push    rax 
+    push    rbx 
+    mov     rbp, rsp
+    sub     rsp, 64
+
+    movsd   [rbp - 16], xmm0  ; start - included 
+    movsd   [rbp - 24], xmm1  ; end - not included 
+    mov     [rbp - 32], rdi         ; steps - count of steps
+
+    call    calc_step
+    movsd   [rbp - 40], xmm0 ; step
+
+
+    mov     rax, [rbp - 32]
+    dec     rax 
+    mov     rdi, rax 
+    call    alloc_array
+    test    rax, rax
+    jne     .error
+    mov     [rbp - 56], rax
+
+
+    mov     rax, qword 0
+    mov     [rbp - 48], rax
+
+    .iter_with_normal_step:
+        mov     rbx, [rbp - 32]
+        add     rbx, qword -1
+        cmp     rax, rbx
+        jnl     .last_iter
+
+        inc     rax
+        mov     rbx, 8
+        mul     rbx 
+        mov     rbx, qword [rbp - 56]
+        add     rax, rbx
+        movsd   xmm0, qword [rbp - 16]
+        movsd   qword [rax], xmm0
+
+        movsd   xmm1, qword [rbp - 40]
+        addsd   xmm0, xmm1
+        movsd   qword [rbp - 16], xmm0
+
+        mov     rax, [rbp - 48]
+        inc     rax
+        mov     [rbp - 48], rax
+        jmp     .iter_with_normal_step
+    .last_iter:
+        movsd   xmm0, [rbp - 16]
+        movsd   xmm1, [rbp - 24]
+        movsd   xmm2, qword [cr.nums]
+        mulsd   xmm0, xmm2
+        addsd   xmm0, xmm1
+        movsd   [rbp - 40], xmm0
+
+
+    .return:
+        add     rsp, 64
+        pop     rbx
+        pop     rax
+        pop     rbp
+        ret
+
+    .error:
+        mov     rax, 0
+        jmp .return
+
+; (start) step (1) step ... step (n-2) end - current (end)
+section .rodata:
+    cr:
+        .nums:  
+            dq  -1.0
+
+
