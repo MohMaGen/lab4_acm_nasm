@@ -7,7 +7,7 @@ map_iter: ; (rdi - *iter, rsi - iter_next_func, rdx - map func)
     mov     [rcx + 16], rdx
     ret
 
-global map_iter_next
+global map_next
 map_next:
     push    rbp
     mov     rbp, rsp
@@ -64,6 +64,34 @@ for_each:
     ret
 
 
+global sum
+; rdi - iter, rsi - next func 
+sum:
+    push    rbp
+
+    movsd   xmm0, qword [.null]
+    movsd   [.sum], xmm0
+
+    lea     rdx, [rel .func]
+    call    for_each
+
+    movsd   xmm0, [.sum]
+
+    pop     rbp
+    ret
+    .func:
+        movsd   xmm1, [.sum]
+        addsd   xmm0, xmm1
+        movsd   [.sum], xmm0
+        ret
+
+section .bss
+    .sum: resq 1
+section .rodata
+    .null: dq 0.0
+
+
+section .text
 global test_iters
 extern printf
 extern alloc_array
@@ -99,8 +127,13 @@ test_iters:
 
     lea     rdi, [rbp - 80]
     lea     rsi, [rel map_next]
-    lea     rdx, [rel .print_func]
-    call    for_each
+    call    sum
+
+    push    rbp
+    lea     rdi, [rel pf]
+    mov     rax, 1
+    call    printf
+    pop     rbp
 
 
     add     rsp, 80
@@ -113,8 +146,7 @@ test_iters:
         ret
 
     .func2:
-        movsd   xmm1, qword [num]
-        addsd   xmm0, xmm1
+        movsd   xmm0, qword [num]
         ret
     
     .print_func:
@@ -129,5 +161,5 @@ test_iters:
         
 
 section .rodata
-    num: dq 10.0
+    num: dq 11.0
     pf: db "%lf", 10, 0

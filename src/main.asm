@@ -12,6 +12,10 @@ extern concat_str
 extern test_array
 extern copy_str
 extern test_iters
+extern test_range
+extern iter_right_rects
+extern free
+extern range
 global main
 
 default rel
@@ -85,8 +89,26 @@ main:
 
     mov     rdi, [rbp - 16]
     call    print_table
+
+    mov     rdi, [rbp - 16]
+    call    free
     
-    call    test_iters
+    add     rsp, 32
+    mov     rbp, rsp
+    sub     rsp, 32
+
+
+    mov     rdi, qword [n]
+    lea     rsi, [rbp - 32]
+    movsd   xmm0, qword [from]
+    movsd   xmm1, qword [end]
+    call    range
+
+
+    lea     rdi, [rbp - 32]
+    call    iter_right_rects
+    call    .print_xmm0
+
 
     add     rsp, 32
 
@@ -96,16 +118,24 @@ main:
     ret
 
     .print_xmm0:        
+        push    rbp
+        sub     rsp, 8
         mov     rdi, format_double
         mov     eax, 1
         call    printf wrt ..plt
+        add     rsp, 8
+        pop     rbp
         ret
 
     .print_rax: 
+        push    rbp
+        sub     rsp, 8
         mov     rdi, format_int
         mov     rsi, rax
         mov     eax, 0
         call    printf wrt ..plt
+        add     rsp, 8
+        pop     rbp
         ret
 
     .read_column:
