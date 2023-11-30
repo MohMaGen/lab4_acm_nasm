@@ -16,6 +16,17 @@ extern test_range
 extern iter_right_rects
 extern free
 extern range
+extern calc_method
+extern right_rects_func
+extern average_rects_func
+extern trapezoids_func
+extern porabolas_func
+extern porabolas_func.divider
+extern kotes_6_func
+extern kotes_6_func.divider
+extern jaba_table
+extern calc_errors
+extern calc_errors_lr
 global main
 
 default rel
@@ -38,7 +49,11 @@ section .rodata
     end: 
         dq  4.3
     n:  
-        dq  15
+        dq  30
+    one:
+        dq  1.0
+    two:
+        dq  2.0
     aboba:
         db  "+aboba+",0
     buffers:
@@ -106,9 +121,44 @@ main:
 
 
     lea     rdi, [rbp - 32]
-    call    iter_right_rects
+    lea     rsi, [rel trapezoids_func]
+    movsd   xmm0, qword [two]
+    call    calc_method
     call    .print_xmm0
 
+    lea     rdi, [rbp - 32]
+    lea     rsi, [rel average_rects_func]
+    movsd   xmm0, qword [one]
+    call    calc_method
+    call    .print_xmm0
+
+    lea     rdi, [rbp - 32]
+    lea     rsi, [rel porabolas_func]
+    movsd   xmm0, qword [porabolas_func.divider]
+    call    calc_method
+    call    .print_xmm0
+
+    lea     rdi, [rbp - 32]
+    lea     rsi, [rel kotes_6_func]
+    movsd   xmm0, qword [kotes_6_func.divider]
+    call    calc_method
+    call    .print_xmm0
+
+
+    lea     rdi, [rbp - 32]
+    call    jaba_table
+
+    mov     rdi, qword [n]
+    lea     rsi, [rbp - 32]
+    movsd   xmm0, qword [from]
+    movsd   xmm1, qword [end]
+    call    range
+
+    lea     rdi, [rbp - 32]
+    call    calc_errors
+
+    lea     rdi, [rbp - 32]
+    call    calc_errors_lr
 
     add     rsp, 32
 

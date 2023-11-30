@@ -162,3 +162,86 @@ copy_str:
     pop     rbp
     ret
 
+global len_str
+len_str:
+    mov     rax, 0
+    .loop:
+        mov     rbx, rdi
+        add     rbx, rax
+        mov     bl, byte [rbx]
+        cmp     bl, byte 0
+        je      .end
+
+        inc     rax
+        jmp     .loop
+    .end:
+    ret
+
+
+global center
+; (rdi - str to center, rsi - size, rdx - place to write)
+center:
+    push    rbp
+    mov     rbp, rsp
+    add     rsp, 32
+
+    mov     [rbp - 8], rdi
+    mov     [rbp - 16], rsi
+    mov     [rbp - 24], rdx
+
+    mov     rdi, rdx
+    lea     rsi, [rel .space]
+    mov     rdx, [rbp - 16]
+    call    mul_str
+
+
+    mov     rdi, [rbp - 8]
+    call    len_str
+    mov     [rbp - 32], rax
+
+    mov     rbx, rax
+    mov     rax, [rbp - 16]
+    sub     rax, rbx
+    mov     rbx, qword 2
+    xor     rdx, rdx
+    div     rbx 
+
+    mov     rax, [rbp - 24]
+    add     rax, rbx
+    mov     rdi, rax
+    mov     rsi, [rbp - 8]
+    call    copy_str
+
+    
+    mov     rax, [rbp - 16]
+    mov     rbx, [rbp - 32]
+    sub     rax, rbx
+    mov     rbx, qword 2
+    xor     rdx, rdx
+    div     rbx
+    mov     rax, [rbp - 24]
+    add     rbx, rax
+    mov     rax, [rbp - 32]
+    add     rbx, rax
+    mov     al, byte [.space]
+    mov     [rbx], byte al
+
+    mov     rax, [rbp - 24]
+    mov     rbx, [rbp - 16]
+    add     rax, rbx
+    mov     [rax], byte 0
+
+
+    add     rsp, 32
+    pop     rbp
+    ret
+section .rodata
+    .space: db " "
+
+
+
+
+
+
+
+
